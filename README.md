@@ -15,8 +15,12 @@ On every PC:
 ```bash
 git clone <this repo> claude-model-switch-alert
 cd claude-model-switch-alert
-node install.js --url https://your-api.example.com/model-switch --user salman
+node install.js --url https://leave.iroidsolutions.com/api/rocketchat/event
 ```
+
+Leave `--user` off and it reports as the OS username of that machine, which is
+usually what you want. Pass `--user <name>` only when the OS username is not
+recognisable.
 
 That writes the hooks into `~/.claude/settings.json` and saves the config to
 `~/.claude/model-switch-alert/config.json`. Restart any Claude Code session that
@@ -61,8 +65,9 @@ node uninstall.js --purge    # also delete the config, state and queue
 
 ## What your API receives
 
-`POST` to your URL, `Content-Type: application/json`, plus
-`Authorization: Bearer <key>` when a key is set.
+`POST https://leave.iroidsolutions.com/api/rocketchat/event`,
+`Content-Type: application/json`, plus `Authorization: Bearer <key>` when a key
+is set.
 
 ```json
 {
@@ -96,7 +101,7 @@ queued for retry.
 ### Example receiver
 
 ```js
-router.post('/model-switch', express.json(), (req, res) => {
+router.post('/api/rocketchat/event', express.json(), (req, res) => {
   const { userName, hostname, fromModel, toModel, source, at } = req.body;
   console.log(`${at} ${userName}@${hostname} ${fromModel} -> ${toModel} (${source})`);
   res.sendStatus(200);
