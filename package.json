@@ -1,0 +1,22 @@
+{
+  "name": "claude-model-switch-alert",
+  "version": "1.0.0",
+  "description": "Sends an alert to your own API every time Claude Code changes model.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "install-hook": "node install.js",
+    "uninstall-hook": "node uninstall.js",
+    "test-send": "node test-send.js"
+  },
+  "files": [
+    "alert.js",
+    "lib.js",
+    "install.js",
+    "uninstall.js",
+    "test-send.js",
+    "README.md"
+  ]
+}
