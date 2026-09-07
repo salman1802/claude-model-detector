@@ -89,14 +89,16 @@ function saveState(state) {
   writeJson(STATE_FILE, pruned);
 }
 
-function getSessionModel(state, sessionId) {
-  const entry = sessionId ? state[sessionId] : null;
-  return entry ? entry.model : null;
+function getSessionEntry(state, sessionId) {
+  return sessionId && state[sessionId] ? state[sessionId] : null;
 }
 
-function setSessionModel(state, sessionId, model) {
+// `src` records where the name came from, "hook" or "transcript". The two
+// spell the same model differently, so a comparison is only meaningful
+// between values of the same source.
+function setSessionModel(state, sessionId, model, src) {
   if (!sessionId || !model) return;
-  state[sessionId] = { model: model, t: Date.now() };
+  state[sessionId] = { model: model, src: src, t: Date.now() };
 }
 
 /* ------------------------------------------------------------------ */
@@ -245,7 +247,7 @@ module.exports = {
   logError: logError,
   loadState: loadState,
   saveState: saveState,
-  getSessionModel: getSessionModel,
+  getSessionEntry: getSessionEntry,
   setSessionModel: setSessionModel,
   lastAssistantModel: lastAssistantModel,
   readSpool: readSpool,

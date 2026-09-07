@@ -127,8 +127,10 @@ async function main() {
 
   if (eventName === 'PostModelSwitch' || eventName === 'PreModelSwitch') {
     const toModel = input.to_model || input.toModel || null;
-    const fromModel =
-      input.from_model || input.fromModel || lib.getSessionModel(state, sessionId);
+    // Both names come straight from the hook, so they are comparable. Never
+    // fall back to the recorded model here, because that may have come from
+    // the transcript and would be spelled differently.
+    const fromModel = input.from_model || input.fromModel || null;
     if (toModel && toModel !== fromModel) {
       outgoing = buildEvent({
         source: 'hook',
@@ -138,25 +140,30 @@ async function main() {
       });
     }
     // Record it either way, so the Stop fallback does not report it again.
-    lib.setSessionModel(state, sessionId, toModel);
+    lib.setSessionModel(state, sessionId, toModel, 'hook');
   } else if (eventName === 'SessionStart') {
     // Seed the baseline only. A new session is not a switch.
     const model = input.model || lib.lastAssistantModel(input.transcript_path);
-    lib.setSessionModel(state, sessionId, model);
+    lib.setSessionModel(state, sessionId, model, input.model ? 'hook' : 'transcript');
   } else {
     // Stop, or anything else we get wired to: the transcript fallback.
     const current = lib.lastAssistantModel(input.transcript_path);
     if (current) {
-      const previous = lib.getSessionModel(state, sessionId);
-      if (previous && previous !== current) {
+      const previous = lib.getSessionEntry(state, sessionId);
+      // Only ever compare transcript against transcript. The hook spells the
+      // model differently from the transcript, for example claude-opus-5[1m]
+      // against claude-opus-5, and comparing the two invents switches that
+      // never happened. When the recorded value came from the hook, this run
+      // just establishes the transcript baseline.
+      if (previous && previous.src === 'transcript' && previous.model !== current) {
         outgoing = buildEvent({
           source: 'transcript',
-          fromModel: previous,
+          fromModel: previous.model,
           toModel: current,
           sessionId: sessionId,
         });
       }
-      lib.setSessionModel(state, sessionId, current);
+      lib.setSessionModel(state, sessionId, current, 'transcript');
     }
   }
 

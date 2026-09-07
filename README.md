@@ -126,9 +126,28 @@ Three hooks are registered.
 Messages from subagents are skipped, otherwise a subagent running a different
 model would look like a switch.
 
+The hook and the transcript spell the same model differently. The hook reports
+`claude-opus-5[1m]` where the transcript records `claude-opus-5`. Each recorded
+model is therefore tagged with where it came from, and `Stop` only compares a
+transcript reading against another transcript reading. Comparing across the two
+reports switches that never happened.
+
+One effect of that: the first `Stop` in a session only sets the baseline. A
+downgrade during the very first reply is caught by `PostModelSwitch` instead.
+
 The transcript reading approach is borrowed from
 [cc-lens](https://github.com/Arindam200/cc-lens), which reads the same local
 files to build its dashboard.
+
+## Tests
+
+```bash
+node test.js
+```
+
+Nine checks covering the real switch path, the transcript fallback, subagents,
+older state files and malformed input. Your live config and state are backed up
+and restored, so it is safe to run on a working machine.
 
 ## When your API is down
 
